@@ -19,7 +19,7 @@ k = 1
 dfAll=[]
 dfAllTemp=[]
 cols= []
-data = pd.read_csv('/Users/akingboladeshada/Desktop/Daily_Equity_Data_updated_001.csv',usecols=["SYMBOL"])
+data = pd.read_csv('Daily_Equity_Data_updated_001.csv',usecols=["SYMBOL"])
 print(data.dtypes)
 for x in data.SYMBOL.unique():
     cols.append(x)
@@ -29,7 +29,7 @@ for x in data.SYMBOL.unique():
 from statsmodels.tsa.stattools import adfuller
 # perform ADF test on the time series
 
-data_content = pd.read_csv('/Users/akingboladeshada/Desktop/Daily_Equity_Data_updated_001.csv', usecols=['TRADE_DATE',"SYMBOL", 'CLOSE_PRICE'])
+data_content = pd.read_csv('Daily_Equity_Data_updated_001.csv', usecols=['TRADE_DATE',"SYMBOL", 'CLOSE_PRICE'])
 data_content['TRADE_DATE'] = pd.to_datetime(data_content['TRADE_DATE'])
 print(data_content.dtypes)
 
@@ -56,11 +56,13 @@ hm = sns.heatmap(cov_mat,
                  cmap='coolwarm',
                  yticklabels=cols,
                  xticklabels=cols)
-plt.suptitle('Stock Price Corelation Among 14  Banks in Nigeria ', size = 18)
+plt.suptitle('Stock Price Correlation Among 14  Banks in Nigeria ', size = 18)
 plt.title( str(np.min(data_content['TRADE_DATE'] )) + " to " + str(np.max(data_content['TRADE_DATE'] )), size = 14)
 
 plt.tight_layout()
+
 plt.show()
+
 # Get the lower triangle of the covariance matrix using numpy.tril()
 lower_tri = np.tril(cov_mat)
 
@@ -71,10 +73,12 @@ lower_tri = np.tril(cov_mat)
 k= 1
 print("*************************************************************************************")
 print("*************************************************************************************")
+print("BANKs with 0.9 to 0.9999 Correlation CoeF. with 6 years Stock Data ")
+
 print("*************************************************************************************")
 for i in range(len(cols)-1):
     for j in range(i+1, len(cols)-1):
-        if abs(cov_mat[i, j]) > 0.8  and   abs(cov_mat[i, j]) < 1.00:
+        if abs(cov_mat[i, j]) > 0.9  and   abs(cov_mat[i, j]) < 1.00:
             print(str(k )  + ".    [" + cols[i] +" : " + cols[j] + "]    ,  Correlation="+ str(cov_mat[i, j]))
             k=k+1
 
