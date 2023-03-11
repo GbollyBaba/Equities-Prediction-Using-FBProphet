@@ -1,13 +1,7 @@
 import numpy as np
-import urllib.request
 
 
 
-
-
-
-example1 = "Example1.txt"
-file1 = open(example1, "r")
 
 print("PREDICTING NSE  BANKING STOCKS WITH FBPROPHET VANILLA")
 print("*****************************************************************")
@@ -17,9 +11,9 @@ import matplotlib.pyplot as plt
 
 plt.rcParams.update({'font.size': 20})
 k = 1
-data = pd.read_excel('/Users/akingboladeshada/Desktop/NSE/Daily_Equity_Data_updated_001.xlsx')
+data = pd.read_excel('Daily_Equity_Data_updated_002.xlsx')
 for x in data.SYMBOL.unique():
-    data = pd.read_excel('/Users/akingboladeshada/Desktop/NSE/Daily_Equity_Data_updated_001.xlsx')
+    data = pd.read_excel('Daily_Equity_Data_updated_002.xlsx')
     data = data[(data["SYMBOL"] == x)]
     df = pd.DataFrame(data, columns=['TRADE_DATE', 'CLOSE_PRICE'])
     df_111 = pd.DataFrame(data, columns=['TRADE_DATE', 'CLOSE_PRICE',
@@ -28,43 +22,30 @@ for x in data.SYMBOL.unique():
     df.columns = ['ds', 'y']
     df['ds'] = pd.to_datetime(df['ds'])
     # bring in fbprophet algorithm
-    from fbprophet import Prophet
+    from prophet import Prophet
 
-    #ax = df_111.plot(kind='line')
-    #ax.yaxis.set_major_formatter(mtick.PercentFormatter())
-    #ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
-    #for var_changepoint in arrAllChangePoint :
-    #model = Prophet(yearly_seasonality=False,daily_seasonality=False)
     model = Prophet()
 
     model.fit(df)
 
-    # make future 50 days prediction
+    # make future 1095 days prediction
     future_dates = model.make_future_dataframe(periods=1095)
     future_dates =future_dates.tail(1095)
     future_dates = future_dates[future_dates['ds'].dt.dayofweek < 5]
     # predict the days
     prediction = model.predict(future_dates)
 
-    df1 = pd.DataFrame(future_dates,  columns = ['TRADE_DATE'
-        ]
-    )
+    df1 = pd.DataFrame(future_dates,  columns = ['TRADE_DATE'])
     hh=[]
     tv=[]
 
 
 
 
-    # PLOT
 
-    #import matplotlib.pyplot as plt
-    #model.plot(prediction)
-    #plt.show()
-
-    #model.plot_components(prediction)
     df_prediction = pd.DataFrame(prediction.tail(800))
-    df_prediction.to_csv('/Users/akingboladeshada/Desktop/NSE/' + x + '.csv')
+    df_prediction.to_csv( x + '.csv')
 
     vDS =[]
     vTrainingSTOCKPRICE=[]
@@ -78,7 +59,6 @@ for x in data.SYMBOL.unique():
     vEPS = []
     vPE_RATIO = []
 
-    #df_DIV =df_111.drop_duplicates(['PAYMENT_DATE', 'DIV','CLOSE_PRICE'])[['PAYMENT_DATE', 'DIV','CLOSE_PRICE',]]
     df_DIV = df_111.drop_duplicates(['PAYMENT_DATE', 'DIV'])[['PAYMENT_DATE', 'DIV' ]]
     AverageCloseprice=np.max( df_111['CLOSE_PRICE'])
 
@@ -90,19 +70,18 @@ for x in data.SYMBOL.unique():
         vPE_RATIO.append(row['PE_RATIO'])
         vEPS.append(row['EPS'])
         vPAYMENT_DATE_withoutDuplicate.append(row['PAYMENT_DATE'])
-    #df_DIV_removeduplicate = df_111.drop_duplicates(['PAYMENT_DATE', 'DIV'])[['PAYMENT_DATE', 'DIV', ]]
     df_DIV_removeduplicate = df_111
 
     for index, row in df_DIV_removeduplicate.iterrows():
         vDIV.append(row['DIV'])
-        #vPAYMENT_DATE_removeduplicate.append(row['PAYMENT_DATE'])
 
     for index, row in df_DIV.iterrows():
         vPAYMENT_DATE.append(row['PAYMENT_DATE'])
         vPAYMENT_DATE_AVERAGE_PRICE.append(AverageCloseprice)
 
     for index, row in df_prediction.iterrows():
-        vPredictionSTOCKPRICE.append(row['yhat_upper'])
+        # average  yhat lower and yhat upper  does the job.
+        vPredictionSTOCKPRICE.append((row['yhat_upper'] + row['yhat_lower'])/2.0)
         vDS_Prediction.append(row['ds'])
 
 
@@ -116,7 +95,7 @@ for x in data.SYMBOL.unique():
 
 
 
-    plt.suptitle(x + ' 01.JAN.2009  to  20.AUG.2021', fontsize=50)
+    plt.suptitle(x + ' 01.JAN.2009  to  30.JUL.2022', fontsize=50)
 
 
     #axes[0].set_title(x)
@@ -124,19 +103,12 @@ for x in data.SYMBOL.unique():
     axes[0].set_ylabel('ClosePrice',fontsize = 30)
     sc1=axes[0].plot(vDS_Prediction, vPredictionSTOCKPRICE, color='b', label="predicted", linewidth=4.0)
     sc2=axes[0].plot(vDS, vTrainingSTOCKPRICE, color='g',label ="training", linewidth=4.0)
-    #sc3=axes[0].bar(vPAYMENT_DATE,vPAYMENT_DATE_AVERAGE_PRICE,c='r',marker='*' ,label="Dividend Payout Date")
-    #sc1 = axes[0].hist(x=vTrainingSTOCKPRICE, bins=20, color='#0504aa',alpha=0.7, rwidth=0.85)
+
     sc3 = axes[0].bar(vPAYMENT_DATE, vPAYMENT_DATE_AVERAGE_PRICE, color='r',linewidth=4.0, label="Dividend Payout Date")
 
-    #axes[0].legend([sc2], ["training"])
-    #axes[0].legend([sc3], ["dividend payout date"])
 
-
-
-
-    #axes[1, 0].set_title('Dividend')
     axes[1].set_ylabel('Dividend',fontsize = 30)
-    #axes[1].plot(vDS,vDIV,color='g')
+
     axes[1].grid()
     sc4=axes[1].plot(vPAYMENT_DATE_withoutDuplicate, vDIV, color='r',marker='*',linewidth=4.0)
     sc44 = axes[1].bar(vPAYMENT_DATE_withoutDuplicate, vDIV, color='g', linewidth=4.0)
@@ -169,11 +141,9 @@ for x in data.SYMBOL.unique():
     plt.show()
     kkk=len(vTrainingSTOCKPRICE)
 
-    fig.savefig('/Users/akingboladeshada/Desktop/NSE/'+x+'.png')
-    #plt.hist(x=vTrainingSTOCKPRICE[kkk-127:], bins=20, color='#0504aa', alpha=0.7, rwidth=0.85)
-    #plt.show()
-    #exit(-1)
+    fig.savefig(x+'.png')
+
 print("*****************************************************************")
 print("*****************************************************************")
 
-exit(-1)
+exit(0)
